@@ -1,0 +1,42 @@
+name: Build Unity package
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'dist/android/PocketsFullMonetize-1.0.0.aar'
+      - 'unity/Assets/PocketsFullMonetize/**'
+      - 'scripts/build_unitypackage.py'
+      - '.github/workflows/build-unity-package.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build Unity package
+        run: python scripts/build_unitypackage.py
+
+      - name: Commit generated Unity package
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist/unity/PocketsFullMonetize-Unity-1.0.0.unitypackage
+          if git diff --cached --quiet; then
+            echo "Unity package is already current."
+            exit 0
+          fi
+          git commit -m "Build Unity v1.0.0 package [skip ci]"
+          git push
