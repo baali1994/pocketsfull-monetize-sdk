@@ -49,3 +49,5 @@ jobs:
           fi
           git commit -m "Build Android v1.0.0 AAR"
           git push
+
+# This workflow intentionally builds the public distribution AAR from the checked-in v1.0.0 source.
