@@ -11,6 +11,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: publish-android-aar
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -30,12 +34,14 @@ jobs:
           chmod +x ./gradlew
           ./gradlew :monetize-sdk:assembleRelease
 
-      - name: Publish AAR into dist
+      - name: Stage generated AAR safely
         shell: bash
         run: |
+          cp sdk-android/monetize-sdk/build/outputs/aar/monetize-sdk-release.aar /tmp/PocketsFullMonetize-1.0.0.aar
+          git fetch origin main
+          git reset --hard origin/main
           mkdir -p dist/android
-          cp sdk-android/monetize-sdk/build/outputs/aar/monetize-sdk-release.aar \
-             dist/android/PocketsFullMonetize-1.0.0.aar
+          cp /tmp/PocketsFullMonetize-1.0.0.aar dist/android/PocketsFullMonetize-1.0.0.aar
 
       - name: Commit generated AAR
         shell: bash
@@ -48,6 +54,6 @@ jobs:
             exit 0
           fi
           git commit -m "Build Android v1.0.0 AAR"
-          git push
+          git push origin HEAD:main
 
-# This workflow intentionally builds the public distribution AAR from the checked-in v1.0.0 source.
+# Builds the public distribution AAR from the checked-in v1.0.0 source.
