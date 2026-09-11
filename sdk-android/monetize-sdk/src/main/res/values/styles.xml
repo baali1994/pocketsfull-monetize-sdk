@@ -1,0 +1,8 @@
+<resources>
+    <style name="PocketsFullMonetizeTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">#FFFFFF</item>
+        <item name="android:colorAccent">#D32F2F</item>
+    </style>
+</resources>
