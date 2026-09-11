@@ -1,0 +1,43 @@
+#!/bin/sh
+set -eu
+APP_HOME=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+WRAPPER_JAR="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
+WRAPPER_URL="https://raw.githubusercontent.com/gradle/gradle/v9.6.1/gradle/wrapper/gradle-wrapper.jar"
+WRAPPER_SHA256="497c8c2a7e5031f6aa847f88104aa80a93532ec32ee17bdb8d1d2f67a194a9c7"
+
+verify_jar() {
+  if command -v sha256sum >/dev/null 2>&1; then
+    actual=$(sha256sum "$WRAPPER_JAR" | awk '{print $1}')
+  elif command -v shasum >/dev/null 2>&1; then
+    actual=$(shasum -a 256 "$WRAPPER_JAR" | awk '{print $1}')
+  else
+    echo "ERROR: sha256sum or shasum is required to verify Gradle wrapper." >&2
+    exit 1
+  fi
+  [ "$actual" = "$WRAPPER_SHA256" ] || {
+    echo "ERROR: Gradle wrapper checksum mismatch." >&2
+    rm -f "$WRAPPER_JAR"
+    exit 1
+  }
+}
+
+if [ ! -f "$WRAPPER_JAR" ]; then
+  mkdir -p "$(dirname "$WRAPPER_JAR")"
+  echo "Downloading verified Gradle 9.6.1 wrapper bootstrap..."
+  if command -v curl >/dev/null 2>&1; then
+    curl -fL --retry 3 -o "$WRAPPER_JAR" "$WRAPPER_URL"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -O "$WRAPPER_JAR" "$WRAPPER_URL"
+  else
+    echo "ERROR: curl or wget is required for the first wrapper bootstrap." >&2
+    exit 1
+  fi
+fi
+verify_jar
+
+if [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/java" ]; then
+  JAVACMD="$JAVA_HOME/bin/java"
+else
+  JAVACMD=java
+fi
+exec "$JAVACMD" -jar "$WRAPPER_JAR" "$@"
