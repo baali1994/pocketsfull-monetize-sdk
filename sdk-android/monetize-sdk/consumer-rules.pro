@@ -1,0 +1,2 @@
+-keep public class ai.pocketsfull.monetize.** { public *; }
+-keep interface ai.pocketsfull.monetize.PocketsFullListener { *; }
