@@ -28,15 +28,23 @@ jobs:
       - name: Build Unity package
         run: python scripts/build_unitypackage.py
 
-      - name: Commit generated Unity package
+      - name: Update distribution checksums
+        shell: bash
+        run: |
+          {
+            sha256sum dist/android/PocketsFullMonetize-1.0.0.aar
+            sha256sum dist/unity/PocketsFullMonetize-Unity-1.0.0.unitypackage
+          } | sed 's#  #  #' > SHA256SUMS.txt
+
+      - name: Commit generated distribution files
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add dist/unity/PocketsFullMonetize-Unity-1.0.0.unitypackage
+          git add dist/unity/PocketsFullMonetize-Unity-1.0.0.unitypackage SHA256SUMS.txt
           if git diff --cached --quiet; then
-            echo "Unity package is already current."
+            echo "Unity package and checksums are already current."
             exit 0
           fi
-          git commit -m "Build Unity v1.0.0 package [skip ci]"
+          git commit -m "Build Unity v1.0.0 package and checksums [skip ci]"
           git push
