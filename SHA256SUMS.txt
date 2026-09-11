@@ -1,0 +1,2 @@
+430844bbe74134dfbe0264864ebce809dbdab2b0f3f1d8663a06e4e47bb02d24  dist/android/PocketsFullMonetize-1.0.0.aar
+3bb0a4343a0cfa1d969bf2abf4ea9b360fe1d2ab34977550b3e97819f2f60df3  dist/unity/PocketsFullMonetize-Unity-1.0.0.unitypackage
