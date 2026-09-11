@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Build the distributable Unity .unitypackage from the public bridge + Android AAR."""
+"""Build a deterministic Unity .unitypackage from the public bridge + Android AAR."""
 
 from pathlib import Path
+import gzip
 import io
 import tarfile
-import time
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "dist/unity/PocketsFullMonetize-Unity-1.0.0.unitypackage"
+FIXED_MTIME = 0
 
 ASSETS = [
     {
@@ -61,7 +62,7 @@ PluginImporter:
 def add_bytes(tar: tarfile.TarFile, name: str, data: bytes) -> None:
     info = tarfile.TarInfo(name)
     info.size = len(data)
-    info.mtime = int(time.time())
+    info.mtime = FIXED_MTIME
     info.mode = 0o644
     tar.addfile(info, io.BytesIO(data))
 
@@ -72,12 +73,17 @@ def main() -> None:
             raise SystemExit(f"Missing source file: {asset['source']}")
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    with tarfile.open(OUT, "w:gz") as tar:
+    tar_buffer = io.BytesIO()
+    with tarfile.open(fileobj=tar_buffer, mode="w", format=tarfile.GNU_FORMAT) as tar:
         for asset in ASSETS:
             guid = asset["guid"]
             add_bytes(tar, f"{guid}/pathname", asset["path"].encode("utf-8"))
             add_bytes(tar, f"{guid}/asset", asset["source"].read_bytes())
             add_bytes(tar, f"{guid}/asset.meta", asset["meta"].encode("utf-8"))
+
+    with OUT.open("wb") as raw:
+        with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=FIXED_MTIME) as gz:
+            gz.write(tar_buffer.getvalue())
 
     print(f"Built {OUT.relative_to(ROOT)} ({OUT.stat().st_size} bytes)")
 
