@@ -1,0 +1,12 @@
+# Build output
+**/build/
+.gradle/
+local.properties
+.idea/
+*.iml
+# Unity generated
+Library/
+Temp/
+Logs/
+obj/
+UserSettings/
